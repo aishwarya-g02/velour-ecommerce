@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VELOUR — Premium Fashion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-inner">
+    <span>V</span><span>E</span><span>L</span><span>O</span><span>U</span><span>R</span>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-left">
+    <button class="nav-icon" id="menuBtn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-logo">VELOUR</div>
+  <div class="nav-right">
+    <button class="nav-icon" id="searchBtn" aria-label="Search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="nav-icon" id="wishlistBtn" aria-label="Wishlist">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span class="badge" id="wishlistBadge">0</span>
+    </button>
+    <button class="nav-icon" id="cartBtn" aria-label="Cart">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="badge" id="cartBadge">0</span>
+    </button>
+    <button class="nav-icon" id="userBtn" aria-label="Account">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- SIDE MENU -->
+<div id="sideMenu">
+  <button class="close-btn" id="closeMenu">✕</button>
+  <nav class="side-nav">
+    <a href="#" data-category="all" class="active">All Collections</a>
+    <a href="#" data-category="women">Women</a>
+    <a href="#" data-category="men">Men</a>
+    <a href="#" data-category="accessories">Accessories</a>
+    <a href="#" data-category="sale">Sale</a>
+  </nav>
+  <div class="side-footer">
+    <a href="#" id="loginLink">Sign In / Register</a>
+    <a href="#">Size Guide</a>
+    <a href="#">Sustainability</a>
+    <a href="#">Contact</a>
+  </div>
+</div>
+<div id="menuOverlay"></div>
+
+<!-- SEARCH OVERLAY -->
+<div id="searchOverlay">
+  <button class="close-btn" id="closeSearch">✕</button>
+  <div class="search-inner">
+    <input type="text" id="searchInput" placeholder="Search for styles, colors, occasions…"/>
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal">
+  <div class="modal-content">
+    <button class="close-btn" id="closeAuth">✕</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Sign In</button>
+      <button class="auth-tab" data-tab="register">Register</button>
+    </div>
+    <div id="loginForm" class="auth-form">
+      <h2>Welcome Back</h2>
+      <input type="email" id="loginEmail" placeholder="Email Address"/>
+      <input type="password" id="loginPassword" placeholder="Password"/>
+      <button class="btn-primary" id="loginBtn">Sign In</button>
+      <p class="auth-msg" id="loginMsg"></p>
+    </div>
+    <div id="registerForm" class="auth-form hidden">
+      <h2>Create Account</h2>
+      <input type="text" id="regName" placeholder="Full Name"/>
+      <input type="email" id="regEmail" placeholder="Email Address"/>
+      <input type="password" id="regPassword" placeholder="Password (min 6 chars)"/>
+      <button class="btn-primary" id="registerBtn">Create Account</button>
+      <p class="auth-msg" id="registerMsg"></p>
+    </div>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div id="cartDrawer">
+  <div class="drawer-header">
+    <h3>Your Cart</h3>
+    <button class="close-btn" id="closeCart">✕</button>
+  </div>
+  <div id="cartItems"></div>
+  <div id="cartFooter" class="hidden">
+    <div class="cart-summary">
+      <span>Subtotal</span>
+      <span id="cartTotal">₹0</span>
+    </div>
+    <p class="cart-note">Shipping & taxes calculated at checkout</p>
+    <button class="btn-primary" id="checkoutBtn">Proceed to Checkout</button>
+  </div>
+  <div id="emptyCart">
+    <p>Your cart is empty</p>
+    <button class="btn-secondary" id="continueShopping">Continue Shopping</button>
+  </div>
+</div>
+<div id="cartOverlay"></div>
+
+<!-- PRODUCT QUICK VIEW -->
+<div id="quickViewModal" class="modal">
+  <div class="modal-content product-modal">
+    <button class="close-btn" id="closeQuickView">✕</button>
+    <div id="quickViewContent"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div id="checkoutModal" class="modal">
+  <div class="modal-content checkout-content">
+    <button class="close-btn" id="closeCheckout">✕</button>
+    <div class="checkout-grid">
+      <div class="checkout-left">
+        <h2>Checkout</h2>
+        <div class="checkout-section">
+          <h4>Contact Information</h4>
+          <input type="text" id="chkName" placeholder="Full Name"/>
+          <input type="email" id="chkEmail" placeholder="Email Address"/>
+          <input type="tel" id="chkPhone" placeholder="Phone Number"/>
+        </div>
+        <div class="checkout-section">
+          <h4>Shipping Address</h4>
+          <input type="text" id="chkAddress" placeholder="Street Address"/>
+          <div class="input-row">
+            <input type="text" id="chkCity" placeholder="City"/>
+            <input type="text" id="chkPincode" placeholder="PIN Code"/>
+          </div>
+          <input type="text" id="chkState" placeholder="State"/>
+        </div>
+        <button class="btn-primary" id="payNowBtn">Pay with Razorpay</button>
+        <p class="checkout-msg" id="checkoutMsg"></p>
+      </div>
+      <div class="checkout-right">
+        <h4>Order Summary</h4>
+        <div id="orderSummaryItems"></div>
+        <div class="order-total">
+          <span>Total</span>
+          <span id="orderTotal">₹0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER SUCCESS -->
+<div id="successModal" class="modal">
+  <div class="modal-content success-content">
+    <div class="success-icon">✓</div>
+    <h2>Order Confirmed!</h2>
+    <p>Thank you for shopping with VELOUR. Your order has been placed successfully.</p>
+    <p class="order-id-text">Order ID: <span id="successOrderId"></span></p>
+    <button class="btn-primary" id="closeSuccess">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg">
+    <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1600&q=80')"></div>
+    <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80')"></div>
+    <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80')"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-subtitle">New Collection 2025</p>
+    <h1 class="hero-title">Wear Your<br/><em>Story</em></h1>
+    <p class="hero-desc">Timeless pieces crafted for the modern soul</p>
+    <button class="btn-hero" id="shopNowBtn">Shop Now</button>
+  </div>
+  <div class="hero-dots">
+    <span class="dot active" data-slide="0"></span>
+    <span class="dot" data-slide="1"></span>
+    <span class="dot" data-slide="2"></span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee">
+    <span>FREE SHIPPING ON ORDERS ABOVE ₹999</span>
+    <span>✦</span>
+    <span>NEW ARRIVALS EVERY FRIDAY</span>
+    <span>✦</span>
+    <span>EASY 30-DAY RETURNS</span>
+    <span>✦</span>
+    <span>SUSTAINABLE FASHION</span>
+    <span>✦</span>
+    <span>FREE SHIPPING ON ORDERS ABOVE ₹999</span>
+    <span>✦</span>
+    <span>NEW ARRIVALS EVERY FRIDAY</span>
+    <span>✦</span>
+    <span>EASY 30-DAY RETURNS</span>
+    <span>✦</span>
+    <span>SUSTAINABLE FASHION</span>
+    <span>✦</span>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="categories-section">
+  <div class="section-header">
+    <h2>Shop by Category</h2>
+    <p>Curated styles for every occasion</p>
+  </div>
+  <div class="categories-grid">
+    <div class="category-card" data-category="women">
+      <div class="cat-img" style="background-image:url('https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=600&q=80')"></div>
+      <div class="cat-info"><h3>Women</h3><span>View All →</span></div>
+    </div>
+    <div class="category-card" data-category="men">
+      <div class="cat-img" style="background-image:url('https://images.unsplash.com/photo-1617137968427-85924c800a22?w=600&q=80')"></div>
+      <div class="cat-info"><h3>Men</h3><span>View All →</span></div>
+    </div>
+    <div class="category-card" data-category="accessories">
+      <div class="cat-img" style="background-image:url('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80')"></div>
+      <div class="cat-info"><h3>Accessories</h3><span>View All →</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products-section" id="productsSection">
+  <div class="section-header">
+    <h2 id="sectionTitle">New Arrivals</h2>
+    <div class="filter-sort">
+      <select id="sortSelect">
+        <option value="default">Sort: Featured</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="name">Name: A-Z</option>
+      </select>
+    </div>
+  </div>
+  <div id="productsGrid" class="products-grid"></div>
+  <div id="loadingProducts" class="loading-state">
+    <div class="skeleton-grid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+  </div>
+  <div id="noProducts" class="empty-state hidden">
+    <p>No products found in this category.</p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section">
+  <div class="features-grid">
+    <div class="feature">
+      <div class="feature-icon">🚚</div>
+      <h4>Free Shipping</h4>
+      <p>On orders above ₹999</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">↩️</div>
+      <h4>Easy Returns</h4>
+      <p>30-day hassle-free returns</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔒</div>
+      <h4>Secure Payment</h4>
+      <p>100% secure transactions</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🌿</div>
+      <h4>Sustainable</h4>
+      <p>Ethically sourced materials</p>
+    </div>
+  </div>
+</section>
+
+<!-- BANNER -->
+<section class="banner-section">
+  <div class="banner-content">
+    <p>Limited Time Offer</p>
+    <h2>Up to 40% Off<br/>on Sale Items</h2>
+    <button class="btn-hero" data-category="sale">Shop Sale</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h3>VELOUR</h3>
+      <p>Premium fashion for the modern soul. We believe in timeless style, sustainable practices, and ethical manufacturing.</p>
+      <div class="social-links">
+        <a href="#">Instagram</a>
+        <a href="#">Pinterest</a>
+        <a href="#">Twitter</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <a href="#">New Arrivals</a>
+      <a href="#">Women</a>
+      <a href="#">Men</a>
+      <a href="#">Accessories</a>
+      <a href="#">Sale</a>
+    </div>
+    <div class="footer-col">
+      <h4>Help</h4>
+      <a href="#">Size Guide</a>
+      <a href="#">Shipping Info</a>
+      <a href="#">Returns</a>
+      <a href="#">Track Order</a>
+      <a href="#">Contact Us</a>
+    </div>
+    <div class="footer-col">
+      <h4>Newsletter</h4>
+      <p>Subscribe for exclusive offers and style inspiration.</p>
+      <div class="newsletter-form">
+        <input type="email" placeholder="Your email address"/>
+        <button>→</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 VELOUR. All rights reserved.</p>
+    <p>Powered by Supabase & Razorpay</p>
+    
+  </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="app.js"></script>
+</body>
+</html>
